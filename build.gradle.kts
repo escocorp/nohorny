@@ -132,8 +132,7 @@ project(":nohorny-client") {
             repository = "xpdustry/nohorny",
             java = true,
             hidden = true,
-            minGameVersion = "157",
-            dependencies = mutableListOf(ModDependency("slf4md", soft = true)),
+            minGameVersion = "157"
         )
 
     val toxopid = extensions.getByType<ToxopidExtension>()
