@@ -9,7 +9,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 @SpringBootApplication
 public class NoHornyCliApplication {
 
-    static void main(final String[] args) {
+    public static void main(final String[] args) {
         new SpringApplicationBuilder(NoHornyCliApplication.class)
                 .web(WebApplicationType.NONE)
                 .bannerMode(Banner.Mode.OFF)

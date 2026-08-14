@@ -104,7 +104,7 @@ final class NoHornyClient implements LifecycleListener {
                 }
             });
             return true;
-        } catch (final RejectedExecutionException _) {
+        } catch (final RejectedExecutionException ignored) {
             this.classificationPermits.release();
             return false;
         }
@@ -220,7 +220,7 @@ final class NoHornyClient implements LifecycleListener {
         MindustryAuthor best = null;
         for (final var author : authors) {
             final var address = author.ip();
-            counts.compute(address, (_, v) -> v == null ? 1 : v + 1);
+            counts.compute(address, (ignored, v) -> v == null ? 1 : v + 1);
             if (best == null || counts.get(address) > counts.get(best.ip())) {
                 best = author;
             }
@@ -233,7 +233,7 @@ final class NoHornyClient implements LifecycleListener {
         final var value = request.body();
         try {
             return Jval.read(request.body()).getString("message", value);
-        } catch (final Exception _) {
+        } catch (final Exception ignored) {
             return value;
         }
     }

@@ -152,7 +152,7 @@ final class DisplayTracker implements LifecycleListener {
             }
         });
 
-        MindustryUtils.onEvent(EventType.Trigger.update, _ -> this.collect());
+        MindustryUtils.onEvent(EventType.Trigger.update, ignored -> this.collect());
     }
 
     private @Nullable List<DrawInstruction> instructions(final LExecutor executor) {

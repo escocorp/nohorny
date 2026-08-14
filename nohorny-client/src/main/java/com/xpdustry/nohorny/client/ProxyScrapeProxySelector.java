@@ -11,6 +11,7 @@ import java.net.ProxySelector;
 import java.net.SocketAddress;
 import java.net.URI;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -154,7 +155,7 @@ final class ProxyScrapeProxySelector extends ProxySelector implements AutoClosea
                 final Future<Optional<Proxy>> completed;
                 try {
                     completed = completion.poll(remaining, TimeUnit.NANOSECONDS);
-                } catch (final InterruptedException _) {
+                } catch (final InterruptedException ignored) {
                     Thread.currentThread().interrupt();
                     return null;
                 }
@@ -202,14 +203,14 @@ final class ProxyScrapeProxySelector extends ProxySelector implements AutoClosea
                     }
                 }
             }
-        } catch (final IOException _) {
+        } catch (final IOException ignored) {
         } finally {
             try {
                 final var error = connection.getErrorStream();
                 if (error != null) {
                     error.close();
                 }
-            } catch (final IOException _) {
+            } catch (final IOException ignored) {
             }
             connection.disconnect();
         }
@@ -227,7 +228,7 @@ final class ProxyScrapeProxySelector extends ProxySelector implements AutoClosea
             return gateway.isAbsolute() && gateway.getHost() != null && "wss".equalsIgnoreCase(gateway.getScheme())
                     ? gateway
                     : null;
-        } catch (final Exception _) {
+        } catch (final Exception ignored) {
             return null;
         }
     }
@@ -263,15 +264,15 @@ final class ProxyScrapeProxySelector extends ProxySelector implements AutoClosea
 
                     final InetAddress address;
                     try {
-                        address = InetAddress.ofLiteral(line.substring(0, split));
-                    } catch (final IllegalArgumentException _) {
+                        address = InetAddress.getByName(line.substring(0, split));
+                    } catch (final UnknownHostException ignored) {
                         return null;
                     }
 
                     final int port;
                     try {
                         port = Integer.parseInt(line.substring(split + 1));
-                    } catch (final NumberFormatException _) {
+                    } catch (final NumberFormatException ignored) {
                         return null;
                     }
                     if (port <= 0 || port > 65535) {

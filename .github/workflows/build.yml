@@ -38,10 +38,10 @@ jobs:
           path: .xpdustry-ci
           sparse-checkout: scripts
 
-      - name: "Setup Java 25"
+      - name: "Setup Java 21"
         uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
         with:
-          java-version: "25"
+          java-version: "21"
           distribution: "temurin"
 
       - name: "Setup Gradle"

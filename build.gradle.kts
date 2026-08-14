@@ -50,8 +50,8 @@ subprojects {
 
     configure<IndraExtension> {
         javaVersions {
-            target(25)
-            minimumToolchain(25)
+            target(21)
+            minimumToolchain(21)
         }
 
         publishSnapshotsTo("xpdustry", "https://maven.xpdustry.com/snapshots")

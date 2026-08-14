@@ -64,9 +64,8 @@ public final class ClassifierConfiguration {
         static final class HuggingFaceSourceConfiguration {
 
             @Bean
-            public ViTModelSource huggingFaceViTModelSource(
-                    final HuggingFaceViTModelSourceProperties properties, final RestClient restClient) {
-                return new HuggingFaceViTModelSource(properties, restClient);
+            public ViTModelSource huggingFaceViTModelSource(final HuggingFaceViTModelSourceProperties properties) {
+                return new HuggingFaceViTModelSource(properties);
             }
         }
     }

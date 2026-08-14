@@ -89,8 +89,8 @@ final class DebugHelper implements LifecycleListener {
             final var player = event.player;
 
             switch (Vars.world.build(x, y)) {
-                case CanvasBlock.CanvasBuild _ -> this.groupDebugSnapshotAt(player, this.canvases.canvases, x, y);
-                case LogicDisplay.LogicDisplayBuild _ ->
+                case CanvasBlock.CanvasBuild ignored -> this.groupDebugSnapshotAt(player, this.canvases.canvases, x, y);
+                case LogicDisplay.LogicDisplayBuild ignored ->
                     this.groupDebugSnapshotAt(player, this.displays.displays, x, y);
                 case null, default -> {}
             }
@@ -122,7 +122,6 @@ final class DebugHelper implements LifecycleListener {
         player.sendMessage(NoHornyPlugin.MESSAGE_PREFIX + "Rendered group at (" + x + ", " + y + ") to " + png);
     }
 
-    @SuppressWarnings("fallthrough")
     public <T extends MindustryImage> void render(final Player player, final VirtualBuilding.Group<T> group) {
         final var color = KELLY_COLORS[new Random().nextInt(KELLY_COLORS.length)];
         for (final var building : group.elements()) {
@@ -136,8 +135,13 @@ final class DebugHelper implements LifecycleListener {
                                 building.x() + GeometryUtils.x(link),
                                 building.y() + GeometryUtils.y(link));
                     }
-                case MindustryCanvas _:
                     this.sendLabelIcon(player, color, "I", building.x(), building.y());
+                    break;
+                case MindustryCanvas ignored:
+                    this.sendLabelIcon(player, color, "I", building.x(), building.y());
+                    break;
+                default:
+                    break;
             }
         }
     }

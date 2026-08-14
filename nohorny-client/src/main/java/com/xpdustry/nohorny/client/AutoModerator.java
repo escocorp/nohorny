@@ -93,7 +93,7 @@ final class AutoModerator implements LifecycleListener {
         for (final var element : group.elements()) {
             actualGroupSize++;
             switch (element.data()) {
-                case MindustryCanvas _ -> {
+                case MindustryCanvas ignored -> {
                     if (!(Vars.world.build(element.x(), element.y()) instanceof CanvasBlock.CanvasBuild canvas)) {
                         continue;
                     }

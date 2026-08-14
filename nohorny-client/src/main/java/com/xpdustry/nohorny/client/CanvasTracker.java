@@ -64,7 +64,7 @@ final class CanvasTracker implements LifecycleListener {
             }
         });
 
-        MindustryUtils.onEvent(EventType.Trigger.update, _ -> this.collect());
+        MindustryUtils.onEvent(EventType.Trigger.update, ignored -> this.collect());
     }
 
     private MindustryCanvas data(final CanvasBlock.CanvasBuild building, final @Nullable MindustryAuthor author) {

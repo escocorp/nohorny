@@ -2,25 +2,26 @@
 package com.xpdustry.nohorny.server.classifier;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.Resource;
-import org.springframework.web.client.RestClient;
 
 public final class HuggingFaceViTModelSource implements ViTModelSource {
 
     private static final Logger log = LoggerFactory.getLogger(HuggingFaceViTModelSource.class);
 
-    private final HuggingFaceViTModelSourceProperties properties;
-    private final RestClient restClient;
+    private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(10);
+    private static final Duration READ_TIMEOUT = Duration.ofMinutes(10);
 
-    public HuggingFaceViTModelSource(
-            final HuggingFaceViTModelSourceProperties properties, final RestClient restClient) {
+    private final HuggingFaceViTModelSourceProperties properties;
+
+    public HuggingFaceViTModelSource(final HuggingFaceViTModelSourceProperties properties) {
         this.properties = properties;
-        this.restClient = restClient;
     }
 
     @Override
@@ -46,21 +47,30 @@ public final class HuggingFaceViTModelSource implements ViTModelSource {
             final var url = "https://huggingface.co/" + this.properties.repository() + "/resolve/"
                     + this.properties.revision() + "/" + this.properties.file();
             log.info("Model {} does not exist locally, downloading from hugging face at {}", name, url);
-            final var request = this.restClient.get().uri(url);
-            if (this.properties.token() != null) {
-                request.header("Authorization", "Bearer " + this.properties.token());
-            }
-            final var resource = request.retrieve().requiredBody(Resource.class);
             final var temp = target.resolveSibling(target.getFileName().toString() + ".tmp");
-            try (final var in = resource.getInputStream()) {
-                Files.copy(in, temp, StandardCopyOption.REPLACE_EXISTING);
-                Files.move(temp, target);
+            try {
+                final var connection =
+                        (HttpURLConnection) URI.create(url).toURL().openConnection();
+                try {
+                    connection.setConnectTimeout((int) CONNECT_TIMEOUT.toMillis());
+                    connection.setReadTimeout((int) READ_TIMEOUT.toMillis());
+                    connection.setInstanceFollowRedirects(true);
+                    if (this.properties.token() != null) {
+                        connection.setRequestProperty("Authorization", "Bearer " + this.properties.token());
+                    }
+                    try (final var in = connection.getInputStream()) {
+                        Files.copy(in, temp, StandardCopyOption.REPLACE_EXISTING);
+                    }
+                    Files.move(temp, target);
+                } finally {
+                    connection.disconnect();
+                }
             } catch (final IOException e) {
                 try {
                     Files.deleteIfExists(temp);
-                } catch (final IOException _) {
+                } catch (final IOException ignored) {
                 }
-                throw new RuntimeException("Failed to copy hugging face model " + name, e);
+                throw new RuntimeException("Failed to download hugging face model " + name, e);
             }
         }
         return target;

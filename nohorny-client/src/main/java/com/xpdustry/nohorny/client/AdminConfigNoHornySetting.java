@@ -69,7 +69,7 @@ final class AdminConfigNoHornySetting<T> implements NoHornySetting<T> {
         }
         try {
             return this.codec.decode(value);
-        } catch (final Exception _) {
+        } catch (final Exception ignored) {
             return this.def;
         }
     }

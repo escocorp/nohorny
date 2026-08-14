@@ -188,7 +188,7 @@ final class DiscordWebhook implements LifecycleListener {
                             },
                             Core.app::post)
                     .orTimeout(1, TimeUnit.SECONDS)
-                    .exceptionally(_ -> "unknown")
+                    .exceptionally(ignored -> "unknown")
                     .join();
             message.append("- Author Name: **").append(name).append("**\n");
             message.append("- Author UUID: **`").append(author.uuid()).append("`**\n");
