@@ -14,19 +14,19 @@ import net.ltgt.gradle.errorprone.errorprone
 import org.springframework.boot.gradle.tasks.run.BootRun
 
 plugins {
-    id("com.diffplug.spotless") version "8.5.1" apply false
+    id("com.diffplug.spotless") version "8.9.0" apply false
     id("net.kyori.indra") version "4.0.0" apply false
     id("net.kyori.indra.publishing") version "4.0.0" apply false
-    id("com.gradleup.shadow") version "9.4.1" apply false
+    id("com.gradleup.shadow") version "9.6.1" apply false
     id("com.xpdustry.toxopid") version "4.2.0" apply false
     id("net.ltgt.errorprone") version "5.1.0" apply false
-    id("org.springframework.boot") version "4.0.6" apply false
+    id("org.springframework.boot") version "4.1.0" apply false
     id("io.spring.dependency-management") version "1.1.7" apply false
 }
 
 allprojects {
     group = "com.xpdustry"
-    version = "4.0.0-beta.8" + if (findProperty("is_release").toString().toBoolean()) "" else "-SNAPSHOT"
+    version = "4.0.0-beta.9" + if (findProperty("is_release").toString().toBoolean()) "" else "-SNAPSHOT"
     description = "NO HORNY IN MY SERVER!"
 }
 
@@ -41,11 +41,10 @@ subprojects {
     }
 
     dependencies {
-        // No update until https://github.com/uber/NullAway/issues/1511 is implemented
-        "errorprone"("com.google.errorprone:error_prone_core:2.49.0")
-        "errorprone"("com.uber.nullaway:nullaway:0.13.4")
-        "compileOnlyApi"("org.jspecify:jspecify:1.0.0")
-        "testImplementation"("org.junit.jupiter:junit-jupiter:6.0.3")
+        "errorprone"("com.google.errorprone:error_prone_core:2.50.0")
+        "errorprone"("com.uber.nullaway:nullaway:0.13.8")
+        "compileOnlyApi"("org.jspecify:jspecify:1.0.1")
+        "testImplementation"("org.junit.jupiter:junit-jupiter:6.1.2")
         "testRuntimeOnly"("org.junit.platform:junit-platform-launcher")
     }
 
@@ -132,7 +131,8 @@ project(":nohorny-client") {
             repository = "xpdustry/nohorny",
             java = true,
             hidden = true,
-            minGameVersion = "157"
+            minGameVersion = "159",
+            dependencies = mutableListOf(ModDependency("slf4md", soft = true)),
         )
 
     val toxopid = extensions.getByType<ToxopidExtension>()
@@ -158,7 +158,8 @@ project(":nohorny-client") {
         exclude(group = "com.google.errorprone")
     }
 
-    val generateMetadataFile by tasks.registering {
+    val generateMetadataFile = tasks.register("generateMetadataFile") {
+        description = "Generate the plugin.json file."
         inputs.property("metadata", metadata)
         val output = temporaryDir.resolve("plugin.json")
         outputs.file(output)
@@ -178,7 +179,8 @@ project(":nohorny-client") {
         dependsOn(tasks.named<ShadowJar>(ShadowJar.SHADOW_JAR_TASK_NAME))
     }
 
-    val downloadSlf4md by tasks.registering(GithubAssetDownload::class) {
+    val downloadSlf4md = tasks.register<GithubAssetDownload>("downloadSlf4md") {
+        description = "Download sl4md.jar from GitHub."
         owner = "xpdustry"
         repo = "slf4md"
         asset = "slf4md.jar"
@@ -204,6 +206,7 @@ project(":nohorny-server") {
 
         "implementation"("org.springframework.boot:spring-boot-starter-webmvc")
         "implementation"("org.springframework.boot:spring-boot-starter-validation")
+        "implementation"("org.springframework.shell:spring-shell-starter:4.0.3")
         "testImplementation"("org.springframework.boot:spring-boot-starter-webmvc-test")
         "developmentOnly"("org.springframework.boot:spring-boot-devtools")
 
@@ -224,14 +227,13 @@ project(":nohorny-server") {
     tasks.named<BootRun>("bootRun") {
         workingDir = temporaryDir
         jvmArgs("--enable-native-access=ALL-UNNAMED")
+        args("start")
     }
 }
 
 configure(listOf(project(":nohorny-common"), project(":nohorny-client"))) {
     apply(plugin = "net.kyori.indra.publishing")
     configure<SigningExtension> {
-        val signingKey: String? by project
-        val signingPassword: String? by project
-        useInMemoryPgpKeys(signingKey, signingPassword)
+        useInMemoryPgpKeys(findProperty("signingKey")?.toString(), findProperty("signingPassword")?.toString())
     }
 }

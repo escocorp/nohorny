@@ -39,7 +39,7 @@ final class DisplayTracker implements LifecycleListener {
     private final SequencedSet<Integer> queue = new LinkedHashSet<>();
     private GroupingVirtualBuildingIndex<MindustryDisplay>.@Nullable Grouper grouper = null;
 
-    private record ProcessorWithLinks(MindustryDisplay.Processor processor, Set<Integer> links) {}
+    record ProcessorWithLinks(MindustryDisplay.Processor processor, Set<Integer> links) {}
 
     public DisplayTracker(final NoHornyClient client) {
         this.client = client;
@@ -259,11 +259,14 @@ final class DisplayTracker implements LifecycleListener {
         }
         this.grouper.progress();
         this.queue.removeIf(this.grouper::isVisited);
-        if (this.grouper.isCompleted() && this.client.canAccept()) {
+        if (this.grouper.isCompleted()) {
             final var group = this.grouper.create();
-            this.grouper = null;
-            if (group != null) {
-                this.client.accept(group);
+            if (group == null) {
+                this.grouper = null;
+                return;
+            }
+            if (this.client.tryAccept(group)) {
+                this.grouper = null;
             }
         }
     }
